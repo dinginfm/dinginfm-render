@@ -63,4 +63,41 @@ def home():
         }
         footer {
           margin-top: 60px;
-          paddi
+          padding: 10px;
+          font-size: 13px;
+          color: #9fbdd3;
+        }
+      </style>
+    </head>
+    <body>
+      <img src="https://dinginfm.com.tr/assets/logo.png" alt="DinginFM Logo" class="logo">
+      <header>
+        <h1>DINGIN FM</h1>
+        <h2>Sessizliğin Sesi Burada ☕</h2>
+      </header>
+
+      <main>
+        <audio controls autoplay>
+          <source src="https://dinginfm.onrender.com/live.mp3" type="audio/mpeg">
+          Tarayıcınız ses oynatmayı desteklemiyor.
+        </audio>
+        <p>📻 DJ Aylak yayında... kahveni al, frekansı yakala.</p>
+      </main>
+
+      <footer>© 2025 Dingin FM — Tüm Hakları Saklıdır</footer>
+    </body>
+    </html>
+    """
+    return html
+
+@app.route('/live.mp3')
+def stream():
+    def generate():
+        with requests.get(SOURCE_URL, stream=True) as r:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    yield chunk
+    return Response(generate(), mimetype='audio/mpeg')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
