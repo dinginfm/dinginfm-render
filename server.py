@@ -3,9 +3,15 @@ import requests
 
 app = Flask(__name__)
 
-# 🎧 Mixxx'in Icecast yayını adresi
-# Mixxx’te Host olarak dinginfm.onrender.com, Port olarak 10000 kullanılacak
-SOURCE_URL = "http://localhost:8000/live"
+# 🎧 Mixxx’in yayın kaynağı adresi
+# Mixxx ayarlarında:
+# Tür: Shoutcast
+# Host: dinginfm.onrender.com
+# Port: 10000
+# Mount: /live
+# Giriş: (boş)
+# Şifre: (boş)
+SOURCE_URL = "http://dinginfm.onrender.com/live"
 
 @app.route('/')
 def home():
@@ -78,7 +84,7 @@ def home():
 
       <main>
         <audio controls autoplay>
-          <source src="https://dinginfm.onrender.com/live.mp3" type="audio/mpeg">
+          <source src="/live.mp3" type="audio/mpeg">
           Tarayıcınız ses oynatmayı desteklemiyor.
         </audio>
         <p>📻 DJ Aylak yayında... kahveni al, frekansı yakala.</p>
@@ -90,14 +96,20 @@ def home():
     """
     return html
 
+
 @app.route('/live.mp3')
 def stream():
     def generate():
-        with requests.get(SOURCE_URL, stream=True) as r:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    yield chunk
+        try:
+            with requests.get(SOURCE_URL, stream=True, timeout=10) as r:
+                for chunk in r.iter_content(chunk_size=1024):
+                    if chunk:
+                        yield chunk
+        except Exception as e:
+            print("Bağlantı hatası:", e)
+            yield b""
     return Response(generate(), mimetype='audio/mpeg')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
